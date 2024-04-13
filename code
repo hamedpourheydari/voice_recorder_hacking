@@ -1,0 +1,53 @@
+import sounddevice
+import random
+from scipy.io.wavfile import write
+import smtplib
+from email.message import EmailMessage
+from colorama import Fore
+import requests
+
+
+#ضبط صدا
+def record(): 
+    randomName = random.randint(1,300000000000)
+    rate = 44100 #طول صوت
+    print(Fore.LIGHTRED_EX+"[+] Recording..... ")
+    #Recorde Voice
+    rv= sounddevice.rec(int(5*rate), samplerate=rate, channels=2)
+
+    #برنامه در حالت اجرا قرار گیرد
+    sounddevice.wait() 
+    #ذخیره صدا
+    write(f"{randomName}.wav", rate, rv) #اف برای این است که بشود عدد وارد کرد
+
+    print(Fore.LIGHTGREEN_EX+"[!] Finishing recording")
+
+    #ارسال ایمیل
+    Sendmail(randomName)
+
+#ارسال ایمیل
+def Sendmail(randomName):
+    print(Fore.LIGHTRED_EX+"[+] درحال ارسال ایمیل")
+
+    E_host = 'smtp.gmail.com'
+    E_user = 'example@gmail.com'
+    E_port = '465'
+    E_password = 'password email'
+    msg = EmailMessage()
+    msg["Subject"] = "ارسال پیام صوتی"
+    msg["From"] = "exampel@gmail.com"
+    msg["To"] = "exampel2@gmail.com"
+    msg.set_content("Thats Your Voice....")
+
+    with open(f'{randomName}.wav', 'rb') as f:
+        filed = f.read()
+        fname = f.name
+    msg.add_attachment(filed, maintype="sound", subtype= "wav", filename=fname)
+
+    with smtplib.SMTP_SSL(E_host, E_port) as sv:
+        sv.login(E_user, E_password)
+        sv.send_message(msg)
+    
+    print(Fore.LIGHTCYAN_EX+"[+] \یام برای شما ارسال گردید")
+
+record()
